@@ -11,7 +11,7 @@ const Pagination = ({first, rows, onLoadPagination, congressPeopleNumber}) => {
     }
     return (
         <Paginator first={basicFirst} rows={basicRows} totalRecords={congressPeopleNumber}
-                   rowsPerPageOptions={[12, 24, 36]}
+                   rowsPerPageOptions={[12, 24, 36, congressPeopleNumber]}
                    onPageChange={onBasicPageChange}></Paginator>
     );
 

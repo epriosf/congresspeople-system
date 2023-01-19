@@ -47,6 +47,7 @@ const CongressPerson = (props) => {
         <Card title={`${props.congressPerson.firstName} ${props.congressPerson.lastName}`}
               subTitle={props.congressPerson.title} footer={footer} header={header}>
             <p>{props.congressPerson.birthday}</p>
+            <p>{props.congressPerson.gender}</p>
             <p>{props.congressPerson.party}</p>
         </Card>
     )
