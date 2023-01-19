@@ -13,6 +13,9 @@ import Pagination from "./Components/Pagination/Pagination";
 
 function App() {
     const [congressPeople, setCongressPeople] = useState([]);
+    const [items, setItems] = useState([]);
+    const [first, setFirst] = useState(0);
+    const [rows, setRows] = useState(12);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -50,6 +53,7 @@ function App() {
 
             });
             setCongressPeople(transformedCongressPeople);
+            setItems(transformedCongressPeople.splice(first, rows));
         } catch (error) {
             setError(error.message);
         }
@@ -60,10 +64,10 @@ function App() {
         fetchCongressPeopleHandler();
     }, [fetchCongressPeopleHandler]);
 
-    let content = <p>Found no movies</p>;
+    let content = <p>Found no congressPeople</p>;
 
     if (congressPeople.length > 0) {
-        content = <CongressPeopleList congressPeople={congressPeople}/>;
+        content = <CongressPeopleList congressPeople={items}/>;
     }
     if (error) {
         content = <p>{error}</p>
@@ -73,6 +77,11 @@ function App() {
                                    fill="var(--surface-ground)" animationDuration=".5s"/>
     }
 
+    const loadingPaginationHandler = ({rows, first}) => {
+        setRows(rows);
+        setFirst(first);
+        setItems([...congressPeople].splice(first, rows));
+    };
     return (
         <div className="grid">
             <div className="col-12 md:col-12 lg:col-12 h-5rem">
@@ -82,10 +91,11 @@ function App() {
                 <Header/>
             </div>
             <div className="col-12 md:col-12 lg:col-12">
-                <Pagination/>
-            </div>
-            <div className="col-12 md:col-12 lg:col-12 min-h-screen">
                 {content}
+            </div>
+            <div className="col-12 md:col-12 lg:col-12">
+                <Pagination congressPeopleNumber={congressPeople.length} onLoadPagination={loadingPaginationHandler}
+                            first={first} rows={rows}/>
             </div>
             <div className="col-12 md:col-12 lg:col-12">
                 <Footer/>
