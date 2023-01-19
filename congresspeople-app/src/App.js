@@ -10,6 +10,7 @@ import {useCallback, useEffect, useState} from "react";
 import {ProgressSpinner} from "primereact/progressspinner";
 import CongressPeopleList from "./Components/CongressPeopleList/CongressPeopleList";
 import Pagination from "./Components/Pagination/Pagination";
+import InputSearch from "./Components/UI/InputSearch/InputSearch";
 
 function App() {
     const [congressPeople, setCongressPeople] = useState([]);
@@ -18,7 +19,9 @@ function App() {
     const [rows, setRows] = useState(12);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [query, setQuery] = useState('');
 
+    const filtersCongressPerson= ['firstName', 'party', 'nextElectionYear','gender'];
     const fetchCongressPeopleHandler = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -44,6 +47,7 @@ function App() {
                     lastName: congressPeopleData.last_name,
                     birthday: congressPeopleData.date_of_birth,
                     party: congressPeopleData.party,
+                    gender: congressPeopleData.gender,
                     twitterAccount: congressPeopleData.twitter_account,
                     facebookAccount: congressPeopleData.facebook_account,
                     youtubeAccount: congressPeopleData.youtube_account,
@@ -67,7 +71,7 @@ function App() {
     let content = <p>Found no congressPeople</p>;
 
     if (congressPeople.length > 0) {
-        content = <CongressPeopleList congressPeople={items}/>;
+        content = <CongressPeopleList congressPeople={items} query={query} filtersCongressPerson={filtersCongressPerson}/>;
     }
     if (error) {
         content = <p>{error}</p>
@@ -82,6 +86,9 @@ function App() {
         setFirst(first);
         setItems([...congressPeople].splice(first, rows));
     };
+    const searchingCriteriaHandler = (searchQuery) => {
+        setQuery(searchQuery);
+    };
     return (
         <div className="grid">
             <div className="col-12 md:col-12 lg:col-12 h-5rem">
@@ -89,6 +96,10 @@ function App() {
             </div>
             <div className="col-12 md:col-12 lg:col-12 p-0">
                 <Header/>
+            </div>
+            <div className="col-12 md:col-12 lg:col-12">
+                <InputSearch query={query}
+                             onSearchingByCriteria={searchingCriteriaHandler}/>
             </div>
             <div className="col-12 md:col-12 lg:col-12">
                 {content}
