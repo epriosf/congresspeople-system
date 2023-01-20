@@ -10,7 +10,7 @@ const Footer = () => {
                 <Button icon="pi pi-github"
                         className="p-button-rounded p-button-primary flex align-items-center justify-content-center m-3"
                         aria-label="Bookmark"/>
-                <Button icon="pi pi-youtube"
+                <Button icon="pi pi-linkedin"
                         className="p-button-rounded p-button-primary flex align-items-center justify-content-center m-3"
                         aria-label="Bookmark"/>
             </div>
