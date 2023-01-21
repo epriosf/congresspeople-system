@@ -1,12 +1,9 @@
-import {useState} from "react";
 import {InputNumber} from "primereact/inputnumber";
 import {Slider} from "primereact/slider";
 /* eslint react/prop-types: 0 */
 
-const SliderWithInput = ({maxVotes, minVotes, onSliderSelect}) => {
-    const [value, setValue] = useState(minVotes || null);
+const SliderWithInput = ({maxVotes, minVotes, onSliderSelect, value}) => {
     const onSliderSelection = (event) => {
-        setValue(event.value);
         onSliderSelect(event.value);
     }
     return (

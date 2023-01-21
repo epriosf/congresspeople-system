@@ -23,8 +23,9 @@ function App() {
     const [query, setQuery] = useState('');
     const [queryByVotes, setQueryByVotes] = useState('');
     const initialFilters = ['firstName', 'party', 'nextElectionYear', 'gender'];
-    const [filters, setFilters] = useState([]);
     const filterTotalVotes = 'totalVotes';
+    const [filters, setFilters] = useState([]);
+    const [valueForSlider, setValueForSlider] = useState(null);
     const minValueSlider = 0;
     const maxValueSlider = 800;
     const fetchCongressPeopleHandler = useCallback(async () => {
@@ -43,7 +44,7 @@ function App() {
 
             const transformedCongressPeople = data.results[0].members.map(congressPeopleData => {
                 return {
-                    id: congressPeopleData.congress,
+                    id: congressPeopleData.id,
                     title: congressPeopleData.title,
                     shortTitle: congressPeopleData.short_title,
                     apiUrl: congressPeopleData.api_uri,
@@ -97,6 +98,8 @@ function App() {
     const searchingCriteriaHandler = (searchQuery) => {
         setQuery(searchQuery);
         setFilters(initialFilters);
+        setValueForSlider(null);
+        setQueryByVotes('');
     };
     const searchingByVotesHandler = (votesQueryAmount) => {
         if (votesQueryAmount === null) {
@@ -104,6 +107,7 @@ function App() {
             setFilters(initialFilters);
         } else {
             setQueryByVotes(votesQueryAmount);
+            setValueForSlider(votesQueryAmount);
             filters.push(filterTotalVotes);
             setFilters(filters);
         }
@@ -124,7 +128,7 @@ function App() {
                     </div>
                     <div className="col-3 md:col-3 lg:col-3 sm:col-12"></div>
                     <div className="col-3 md:col-3 lg:col-3 sm:col-12">
-                        <SliderWithInput minVotes={minValueSlider} maxVotes={maxValueSlider}
+                        <SliderWithInput value={valueForSlider} minVotes={minValueSlider} maxVotes={maxValueSlider}
                                          onSliderSelect={searchingByVotesHandler}/>
                     </div>
                 </div>
