@@ -11,6 +11,7 @@ import {ProgressSpinner} from "primereact/progressspinner";
 import CongressPeopleList from "./Components/CongressPeopleList/CongressPeopleList";
 import Pagination from "./Components/Pagination/Pagination";
 import InputSearch from "./Components/UI/InputSearch/InputSearch";
+import SliderWithInput from "./Components/UI/Slider/SliderWithInput";
 
 function App() {
     const [congressPeople, setCongressPeople] = useState([]);
@@ -20,8 +21,13 @@ function App() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [query, setQuery] = useState('');
-
-    const filtersCongressPerson= ['firstName', 'party', 'nextElectionYear','gender'];
+    const [queryByVotes, setQueryByVotes] = useState('');
+    const initialFilters = ['firstName', 'party', 'nextElectionYear', 'gender'];
+    const filterTotalVotes = 'totalVotes';
+    const [filters, setFilters] = useState([]);
+    const [valueForSlider, setValueForSlider] = useState(null);
+    const minValueSlider = 0;
+    const maxValueSlider = 800;
     const fetchCongressPeopleHandler = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -38,7 +44,7 @@ function App() {
 
             const transformedCongressPeople = data.results[0].members.map(congressPeopleData => {
                 return {
-                    id: congressPeopleData.congress,
+                    id: congressPeopleData.id,
                     title: congressPeopleData.title,
                     shortTitle: congressPeopleData.short_title,
                     apiUrl: congressPeopleData.api_uri,
@@ -71,7 +77,10 @@ function App() {
     let content = <p>Found no congressPeople</p>;
 
     if (congressPeople.length > 0) {
-        content = <CongressPeopleList congressPeople={items} query={query} filtersCongressPerson={filtersCongressPerson}/>;
+        content =
+            <CongressPeopleList congressPeople={items} query={query} queryByVotes={queryByVotes}
+                                filtersCongressPerson={filters}
+            />;
     }
     if (error) {
         content = <p>{error}</p>
@@ -88,6 +97,20 @@ function App() {
     };
     const searchingCriteriaHandler = (searchQuery) => {
         setQuery(searchQuery);
+        setFilters(initialFilters);
+        setValueForSlider(null);
+        setQueryByVotes('');
+    };
+    const searchingByVotesHandler = (votesQueryAmount) => {
+        if (votesQueryAmount === null) {
+            setQueryByVotes('');
+            setFilters(initialFilters);
+        } else {
+            setQueryByVotes(votesQueryAmount);
+            setValueForSlider(votesQueryAmount);
+            filters.push(filterTotalVotes);
+            setFilters(filters);
+        }
     };
     return (
         <div className="grid">
@@ -98,8 +121,18 @@ function App() {
                 <Header/>
             </div>
             <div className="col-12 md:col-12 lg:col-12">
-                <InputSearch query={query}
-                             onSearchingByCriteria={searchingCriteriaHandler}/>
+                <div className="grid">
+                    <div className="col-6 md:col-6 lg:col-6 sm:col-12">
+                        <InputSearch query={query}
+                                     onSearchingByCriteria={searchingCriteriaHandler}/>
+                    </div>
+                    <div className="col-3 md:col-3 lg:col-3 sm:col-12"></div>
+                    <div className="col-3 md:col-3 lg:col-3 sm:col-12">
+                        <SliderWithInput value={valueForSlider} minVotes={minValueSlider} maxVotes={maxValueSlider}
+                                         onSliderSelect={searchingByVotesHandler}/>
+                    </div>
+                </div>
+
             </div>
             <div className="col-12 md:col-12 lg:col-12">
                 {content}
@@ -117,3 +150,4 @@ function App() {
 }
 
 export default App;
+
