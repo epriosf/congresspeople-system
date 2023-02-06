@@ -6,20 +6,19 @@ import "primeflex/primeflex.css";
 import Footer from "./Components/Footer/Footer";
 import Header from "./Components/Header/Header";
 import Banner from "./Components/Banner/Banner";
-import {useCallback, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {ProgressSpinner} from "primereact/progressspinner";
 import CongressPeopleList from "./Components/CongressPeopleList/CongressPeopleList";
 import Pagination from "./Components/Pagination/Pagination";
 import InputSearch from "./Components/UI/InputSearch/InputSearch";
 import SliderWithInput from "./Components/UI/Slider/SliderWithInput";
+import useHttp from "./Components/hooks/use-http";
 
 function App() {
     const [congressPeople, setCongressPeople] = useState([]);
     const [items, setItems] = useState([]);
     const [first, setFirst] = useState(0);
     const [rows, setRows] = useState(12);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [query, setQuery] = useState('');
     const [queryByVotes, setQueryByVotes] = useState('');
     const initialFilters = ['firstName', 'party', 'nextElectionYear', 'gender'];
@@ -28,54 +27,49 @@ function App() {
     const [valueForSlider, setValueForSlider] = useState(null);
     const minValueSlider = 0;
     const maxValueSlider = 800;
-    const fetchCongressPeopleHandler = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const headers = {
-                'X-API-Key': '7blJ75wWn7Le4734oIsCQEehKgWrbB56lbcHIJPJ'
-            }
-            const response = await fetch('https://api.propublica.org/congress/v1/116/senate/members.json', {headers});
-            if (!response.status) {
-                throw  new Error('Something went wrong!');
-            }
 
-            const data = await response.json();
-
-            const transformedCongressPeople = data.results[0].members.map(congressPeopleData => {
-                return {
-                    id: congressPeopleData.id,
-                    title: congressPeopleData.title,
-                    shortTitle: congressPeopleData.short_title,
-                    apiUrl: congressPeopleData.api_uri,
-                    firstName: congressPeopleData.first_name,
-                    middleName: congressPeopleData.middle_name,
-                    lastName: congressPeopleData.last_name,
-                    birthday: congressPeopleData.date_of_birth,
-                    party: congressPeopleData.party,
-                    gender: congressPeopleData.gender,
-                    twitterAccount: congressPeopleData.twitter_account,
-                    facebookAccount: congressPeopleData.facebook_account,
-                    youtubeAccount: congressPeopleData.youtube_account,
-                    totalVotes: congressPeopleData.total_votes,
-                    nextElectionYear: congressPeopleData.next_election
-                };
-
-            });
-            setCongressPeople(transformedCongressPeople);
-            setItems(transformedCongressPeople.splice(first, rows));
-        } catch (error) {
-            setError(error.message);
-        }
-        setIsLoading(false);
-    }, []);
+    const {isLoading, error, sendRequest: fetchCongressPeople} = useHttp();
 
     useEffect(() => {
-        fetchCongressPeopleHandler();
-    }, [fetchCongressPeopleHandler]);
+        const transformCongressPeople = (congressPeopleObj => {
+            const memberCongressPeople = congressPeopleObj.results[0].members;
+            const loadedCongressPeople = [];
+            for (const congressPeopleKey in memberCongressPeople) {
+                loadedCongressPeople.push({
+                    id: memberCongressPeople[congressPeopleKey].id,
+                    title: memberCongressPeople[congressPeopleKey].title,
+                    shortTitle: memberCongressPeople[congressPeopleKey].short_title,
+                    apiUrl: memberCongressPeople[congressPeopleKey].api_uri,
+                    firstName: memberCongressPeople[congressPeopleKey].first_name,
+                    middleName: memberCongressPeople[congressPeopleKey].middle_name,
+                    lastName: memberCongressPeople[congressPeopleKey].last_name,
+                    birthday: memberCongressPeople[congressPeopleKey].date_of_birth,
+                    party: memberCongressPeople[congressPeopleKey].party,
+                    gender: memberCongressPeople[congressPeopleKey].gender,
+                    twitterAccount: memberCongressPeople[congressPeopleKey].twitter_account,
+                    facebookAccount: memberCongressPeople[congressPeopleKey].facebook_account,
+                    youtubeAccount: memberCongressPeople[congressPeopleKey].youtube_account,
+                    totalVotes: memberCongressPeople[congressPeopleKey].total_votes,
+                    nextElectionYear: memberCongressPeople[congressPeopleKey].next_election
+                })
+            }
+            setCongressPeople(loadedCongressPeople);
+            setItems(loadedCongressPeople.splice(first, rows));
+        });
+
+        fetchCongressPeople(
+            {
+                url: `https://api.propublica.org/congress/v1/116/senate/members.json`,
+                method: 'GET',
+                headers: {
+                    'X-API-Key': '7blJ75wWn7Le4734oIsCQEehKgWrbB56lbcHIJPJ'
+                }
+            },
+            transformCongressPeople
+        );
+    }, []);
 
     let content = <p>Found no congressPeople</p>;
-
     if (congressPeople.length > 0) {
         content =
             <CongressPeopleList congressPeople={items} query={query} queryByVotes={queryByVotes}
