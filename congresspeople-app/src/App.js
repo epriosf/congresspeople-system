@@ -13,20 +13,31 @@ import Pagination from "./Components/Pagination/Pagination";
 import InputSearch from "./Components/UI/InputSearch/InputSearch";
 import SliderWithInput from "./Components/UI/Slider/SliderWithInput";
 import useHttp from "./Components/hooks/use-http";
+import FormSendRequest from "./Components/Forms/FormSendRequest";
+
+const chambersList = [
+    {name: 'house', code: 'H'},
+    {name: 'senate', code: 'S'},
+];
+const initialFilters = ['firstName', 'party', 'nextElectionYear', 'gender'];
+const filterTotalVotes = 'totalVotes';
+const minValueSlider = 0;
+const maxValueSlider = 800;
+const defaultCongressSession = 116;
+const defaultChamber = chambersList[0];
 
 function App() {
+    const [selectedCongressSession, setSelectedCongressSession] = useState(defaultCongressSession);
+    const [selectedChamber, setSelectedChamber] = useState(defaultChamber);
     const [congressPeople, setCongressPeople] = useState([]);
     const [items, setItems] = useState([]);
     const [first, setFirst] = useState(0);
     const [rows, setRows] = useState(12);
     const [query, setQuery] = useState('');
     const [queryByVotes, setQueryByVotes] = useState('');
-    const initialFilters = ['firstName', 'party', 'nextElectionYear', 'gender'];
-    const filterTotalVotes = 'totalVotes';
+
     const [filters, setFilters] = useState([]);
     const [valueForSlider, setValueForSlider] = useState(null);
-    const minValueSlider = 0;
-    const maxValueSlider = 800;
 
     const {isLoading, error, sendRequest: fetchCongressPeople} = useHttp();
 
@@ -59,7 +70,7 @@ function App() {
 
         fetchCongressPeople(
             {
-                url: `https://api.propublica.org/congress/v1/116/senate/members.json`,
+                url: `https://api.propublica.org/congress/v1/${selectedCongressSession}/${selectedChamber.name}/members.json`,
                 method: 'GET',
                 headers: {
                     'X-API-Key': '7blJ75wWn7Le4734oIsCQEehKgWrbB56lbcHIJPJ'
@@ -67,7 +78,7 @@ function App() {
             },
             transformCongressPeople
         );
-    }, []);
+    }, [selectedCongressSession, selectedChamber]);
 
     let content = <p>Found no congressPeople</p>;
     if (congressPeople.length > 0) {
@@ -106,6 +117,13 @@ function App() {
             setFilters(filters);
         }
     };
+    const FormSendRequestSubmitHandler = (data) => {
+        if (data.congress === selectedCongressSession && data.chamber.name === selectedChamber.name) {
+            return;
+        }
+        setSelectedCongressSession(data.congress);
+        setSelectedChamber(data.chamber);
+    }
     return (
         <div className="grid">
             <div className="col-12 md:col-12 lg:col-12 h-5rem">
@@ -113,6 +131,16 @@ function App() {
             </div>
             <div className="col-12 md:col-12 lg:col-12 p-0">
                 <Header/>
+            </div>
+            <div className="col-12 md:col-12 lg:col-12">
+                <div className="grid">
+                    <div className="col-2 md:col-2 lg:col-2 sm:col-12">
+                        <FormSendRequest chambers={chambersList} chamber={selectedChamber}
+                                         congressSession={selectedCongressSession}
+                                         onFormSubmit={FormSendRequestSubmitHandler}></FormSendRequest>
+                    </div>
+                </div>
+
             </div>
             <div className="col-12 md:col-12 lg:col-12">
                 <div className="grid">
